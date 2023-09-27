@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
       
       float d2 = wb_distance_sensor_get_value( ds[1] );     
         
-      printf("\n %.1f %.1f", d1, d2 );
+      // printf("\n %.1f %.1f", d1, d2 );
       
       float mean_d = (d1 + d2) / 2;
       
