@@ -22,10 +22,13 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <unistd.h>
+#include <fcntl.h>
+
 #include <javino.h>
 
 // time in [ms] of a simulation step
-#define TIME_STEP 100
+#define TIME_STEP 64
 
 #define TTY_EXOGENOUS_PORT "/dev/ttyExogenous0"
 
@@ -63,24 +66,30 @@ int main(int argc, char **argv) {
   }
   
   
+  int exogenous_port =  open(
+    TTY_EXOGENOUS_PORT,
+    O_RDWR
+    );
+  
+  
   char *javino_received_msg;
+  
+  double left_speed = 0.0;
+  double right_speed = 0.0;  
 
   // feedback loop
   while (wb_robot_step(TIME_STEP) != -1) {
     // init speeds
-    double left_speed = 0.0;
-    double right_speed = 0.0;
+
     
-    javino_received_msg = javino_get_msg("/dev/ttyExogenous0");   
+    javino_received_msg = javino_get_msg(
+      exogenous_port);
     
     if ( ! strcmp( javino_received_msg , "getPercepts" )  ){
-        
-      fprintf(stderr,
-        "\nReceived: getPercepts (%d)\n",
-        reasoning_cycle++ );
       
       // Distance sensor value
-      float distance = wb_distance_sensor_get_value( (ds[0] + ds[1])/2 );
+      float distance = wb_distance_sensor_get_value( 
+        (ds[0] + ds[1])/2 );
       
       // Composing percepts message to send to Javino
       int nbytes_written = sprintf(percepts_msg, 
@@ -93,11 +102,17 @@ int main(int argc, char **argv) {
          
        } else {
        
-         fprintf(stderr, "\n%s\n", percepts_msg);
+         // fprintf(stderr, "\n%s\n", percepts_msg);
          
        }
        
-       nbytes_written = javino_send_msg("/dev/ttyExogenous0",
+      fprintf(stderr,
+        "\nReceived: getPercepts (%d) = %s\n",
+        reasoning_cycle++, 
+        percepts_msg);       
+       
+       nbytes_written = javino_send_msg(
+         exogenous_port,
          percepts_msg);
          
        if ( (strlen(percepts_msg) + JAVINO_HEADER_LEN) != nbytes_written ){
