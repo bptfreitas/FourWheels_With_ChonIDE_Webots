@@ -70,31 +70,43 @@ int main(int argc, char **argv) {
     TTY_EXOGENOUS_PORT,
     O_RDWR
     );
+    
+  javino_init( exogenous_port );
   
   
   char *javino_received_msg;
   
   double left_speed = 0.0;
-  double right_speed = 0.0;  
+  double right_speed = 0.0;
 
   // feedback loop
   while (wb_robot_step(TIME_STEP) != -1) {
     // init speeds
+    
+    int javino_has_message = avaliable_msg();
+    
+    if (! javino_has_message ){
+      continue;
+    }
 
     
-    javino_received_msg = javino_get_msg(
-      exogenous_port);
+    javino_received_msg = javino_get_msg( );
     
     if ( ! strcmp( javino_received_msg , "getPercepts" )  ){
       
       // Distance sensor value
-      float distance = wb_distance_sensor_get_value( 
-        (ds[0] + ds[1])/2 );
+      float d1 = wb_distance_sensor_get_value( ds[0] );
+      
+      float d2 = wb_distance_sensor_get_value( ds[1] );     
+        
+      printf("\n %.1f %.1f", d1, d2 );
+      
+      float mean_d = (d1 + d2) / 2;
       
       // Composing percepts message to send to Javino
       int nbytes_written = sprintf(percepts_msg, 
         "distance(%.1f);",
-        (1000 - distance) );
+        mean_d );
         
        if ( nbytes_written == -1 ){
        
