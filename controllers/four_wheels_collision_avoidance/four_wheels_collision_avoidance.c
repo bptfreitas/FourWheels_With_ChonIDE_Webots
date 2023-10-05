@@ -88,7 +88,6 @@ int main(int argc, char **argv) {
     if (! javino_has_message ){
       continue;
     }
-
     
     javino_received_msg = javino_get_msg( );
     
