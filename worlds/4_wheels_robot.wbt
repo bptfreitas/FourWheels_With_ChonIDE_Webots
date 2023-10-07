@@ -61,8 +61,8 @@ DEF WALL_4 Solid {
   boundingObject USE WALL_SHAPE
 }
 Robot {
-  translation 0.06177912215943807 0.29582317551565823 0.039860490893358094
-  rotation -3.294934970653957e-08 -9.079972287839843e-09 0.9999999999999993 0.5199630933397047
+  translation -0.385 0.38 0.04
+  rotation 0 0 1 0
   children [
     DEF BODY Shape {
       appearance PBRAppearance {
@@ -186,7 +186,10 @@ Robot {
     }
     DEF DS_RIGHT DistanceSensor {
       translation 0.1 -0.03 0
-      rotation 0 0 1 -0.3
+      rotation 0 0 1 0
+      type "sonar"
+	  lookupTable [ 0     0  0,
+      		        4     400  0  ]          
       children [
         Shape {
           appearance PBRAppearance {
@@ -203,7 +206,10 @@ Robot {
     }
     DEF DS_LEFT DistanceSensor {
       translation 0.1 0.03 0
-      rotation 0 0 1 0.3
+      rotation 0 0 1 0
+      type "sonar"
+	  lookupTable [ 0     0  0,
+      		        4     400  0  ]
       children [
         Shape {
           appearance PBRAppearance {
