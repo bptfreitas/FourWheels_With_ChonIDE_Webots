@@ -28,7 +28,7 @@
 #include <javino.h>
 
 // time in [ms] of a simulation step
-#define TIME_STEP 64
+#define TIME_STEP 20
 
 #define TTY_EXOGENOUS_PORT "/dev/ttyExogenous0"
 
@@ -55,6 +55,7 @@ int main(int argc, char **argv) {
     ds[i] = wb_robot_get_device(ds_names[i]);
     wb_distance_sensor_enable(ds[i], TIME_STEP);
   }
+
   
   // initialise motors
   WbDeviceTag wheels[4];
@@ -73,11 +74,15 @@ int main(int argc, char **argv) {
     
   javino_init( exogenous_port );
   
-  
   char *javino_received_msg;
   
   double left_speed = 0.0;
   double right_speed = 0.0;
+  
+  wb_motor_set_velocity(wheels[0], left_speed);
+  wb_motor_set_velocity(wheels[1], right_speed);
+  wb_motor_set_velocity(wheels[2], left_speed);
+  wb_motor_set_velocity(wheels[3], right_speed);  
 
   // feedback loop
   while (wb_robot_step(TIME_STEP) != -1) {
@@ -86,26 +91,28 @@ int main(int argc, char **argv) {
     int javino_has_message = avaliable_msg();
     
     if (! javino_has_message ){
+    
       continue;
     }
     
     javino_received_msg = javino_get_msg( );
+    
+    fprintf(stderr, "\njavino_received_msg: %s", 
+      javino_received_msg ); 
     
     if ( ! strcmp( javino_received_msg , "getPercepts" )  ){
       
       // Distance sensor value
       float d1 = wb_distance_sensor_get_value( ds[0] );
       
-      float d2 = wb_distance_sensor_get_value( ds[1] );     
+      float d2 = wb_distance_sensor_get_value( ds[1] );
         
       // printf("\n %.1f %.1f", d1, d2 );
-      
-      float mean_d = (d1 + d2) / 2;
-      
+            
       // Composing percepts message to send to Javino
       int nbytes_written = sprintf(percepts_msg, 
-        "distance(%.1f);",
-        mean_d );
+        "dLeft(%.1f);dRight(%.1f);",
+        d1, d2 );
         
        if ( nbytes_written == -1 ){
        
@@ -117,10 +124,18 @@ int main(int argc, char **argv) {
          
        }
        
-      fprintf(stderr,
+      fprintf(stdout,
         "\nReceived: getPercepts (%d) = %s\n",
         reasoning_cycle++, 
-        percepts_msg);       
+        percepts_msg);
+
+        //left_speed = 0.0;
+        //right_speed = 0.0;                         
+        
+        //wb_motor_set_velocity(wheels[0], left_speed);
+        //wb_motor_set_velocity(wheels[1], right_speed);
+        //wb_motor_set_velocity(wheels[2], left_speed);
+        //wb_motor_set_velocity(wheels[3], right_speed);             
        
        nbytes_written = javino_send_msg(
          exogenous_port,
@@ -133,25 +148,58 @@ int main(int argc, char **argv) {
            (strlen(percepts_msg) + JAVINO_HEADER_LEN),
            nbytes_written );
               
-       }
+       }     
+       
+      free( javino_received_msg );        
                                                       
     } else if ( ! strcmp( javino_received_msg , "goAhead" ) ){
     
-      fprintf(stderr, 
+      fprintf(stdout, 
         "\nReceived: goAhead (%d)\n",
         reasoning_cycle++ );
     
       left_speed = 1.0;
-      right_speed = 1.0;          
+      right_speed = 1.0; 
+      
+      wb_motor_set_velocity(wheels[0], left_speed);
+      wb_motor_set_velocity(wheels[1], right_speed);
+      wb_motor_set_velocity(wheels[2], left_speed);
+      wb_motor_set_velocity(wheels[3], right_speed);  
+      
+      free( javino_received_msg );                
+          
+    } else if ( ! strcmp( javino_received_msg , "goRight" ) ){
+    
+      fprintf( stdout,
+        "\nReceived: goRight (%d)\n",
+        reasoning_cycle++ );
+    
+      left_speed = 1.0;
+      right_speed = 0.0;
+      
+      wb_motor_set_velocity(wheels[0], left_speed);
+      wb_motor_set_velocity(wheels[1], right_speed);
+      wb_motor_set_velocity(wheels[2], left_speed);
+      wb_motor_set_velocity(wheels[3], right_speed); 
+      
+      free( javino_received_msg );                
     
     } else if ( ! strcmp( javino_received_msg , "goBack" ) ){
     
-      fprintf(stderr, 
+      fprintf(stdout, 
         "\nReceived: goBack (%d)\n",
         reasoning_cycle++ );
     
       left_speed = -1.0;
-      right_speed = -1.0;             
+      right_speed = -1.0;  
+      
+      
+      wb_motor_set_velocity(wheels[0], left_speed);
+      wb_motor_set_velocity(wheels[1], right_speed);
+      wb_motor_set_velocity(wheels[2], left_speed);
+      wb_motor_set_velocity(wheels[3], right_speed);  
+      
+            free( javino_received_msg );                     
     
     } else {
     
@@ -162,10 +210,7 @@ int main(int argc, char **argv) {
     
     }
     
-    if ( javino_received_msg ){
-      free( javino_received_msg );
-    }
-     
+ 
     
 /*    
     if (avoid_obstacle_counter > 0) {
@@ -188,10 +233,7 @@ int main(int argc, char **argv) {
 */    
 
     // write actuators inputs
-    wb_motor_set_velocity(wheels[0], left_speed);
-    wb_motor_set_velocity(wheels[1], right_speed);
-    wb_motor_set_velocity(wheels[2], left_speed);
-    wb_motor_set_velocity(wheels[3], right_speed);
+
   }
 
   // cleanup the Webots API
