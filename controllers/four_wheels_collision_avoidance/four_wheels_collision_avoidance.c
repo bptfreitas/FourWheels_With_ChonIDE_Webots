@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
   while (wb_robot_step(TIME_STEP) != -1) {
     // init speeds
     
-    int javino_has_message = avaliable_msg();
+    int javino_has_message = javino_avaliable_msg();
     
     if (! javino_has_message ){
     
@@ -137,9 +137,7 @@ int main(int argc, char **argv) {
         //wb_motor_set_velocity(wheels[2], left_speed);
         //wb_motor_set_velocity(wheels[3], right_speed);             
        
-       nbytes_written = javino_send_msg(
-         exogenous_port,
-         percepts_msg);
+       nbytes_written = javino_send_msg( percepts_msg);
          
        if ( (strlen(percepts_msg) + JAVINO_HEADER_LEN) != nbytes_written ){
          
