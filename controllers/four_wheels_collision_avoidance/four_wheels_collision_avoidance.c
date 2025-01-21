@@ -72,6 +72,10 @@ int main(int argc, char **argv) {
     O_RDWR
     );
     
+  if ( exogenous_port < 0 ){
+    perror("ERROR");
+  }
+    
   javino_init( exogenous_port );
   
   char *javino_received_msg;
@@ -93,6 +97,7 @@ int main(int argc, char **argv) {
     if (! javino_has_message ){
     
       continue;
+      
     }
     
     javino_received_msg = javino_get_msg( );
@@ -114,7 +119,7 @@ int main(int argc, char **argv) {
         "dLeft(%.1f);dRight(%.1f);",
         d1, d2 );
         
-       if ( nbytes_written == -1 ){
+       if ( nbytes_written < 0 ){
        
          fprintf(stderr, "\nERROR: Couldn't compose perception strings!");
          
@@ -197,12 +202,29 @@ int main(int argc, char **argv) {
       wb_motor_set_velocity(wheels[2], left_speed);
       wb_motor_set_velocity(wheels[3], right_speed);  
       
-            free( javino_received_msg );                     
+      free( javino_received_msg );                     
+    
+    } else if ( ! strcmp( javino_received_msg , "stop" ) ){
+    
+      fprintf(stdout, 
+        "\nReceived: stop (%d)\n",
+        reasoning_cycle++ );
+    
+      left_speed = 0;
+      right_speed = 0;  
+      
+      
+      wb_motor_set_velocity(wheels[0], left_speed);
+      wb_motor_set_velocity(wheels[1], right_speed);
+      wb_motor_set_velocity(wheels[2], left_speed);
+      wb_motor_set_velocity(wheels[3], right_speed);  
+      
+      free( javino_received_msg );                     
     
     } else {
     
       fprintf(stderr, 
-        "\nWARNING: unknown received reasoning (%d): (%s) \n",
+        "\nWARNING: unknown received act (%d): (%s) \n",
         reasoning_cycle++,
         javino_received_msg ); 
     
