@@ -19,8 +19,8 @@
 
 
 # Do not modify the following: this includes Webots global Makefile.include
-INCLUDE = -IJavinoCLibrary/include
-LIBRARIES = -LJavinoCLibrary/lib/ -ljavino
+INCLUDE = -IJavinoInC/include
+LIBRARIES = -LJavinoInC/lib/ -ljavino
 
 null :=
 space := $(null) $(null)
