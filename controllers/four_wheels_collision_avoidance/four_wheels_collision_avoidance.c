@@ -17,6 +17,7 @@
 #include <webots/distance_sensor.h>
 #include <webots/motor.h>
 #include <webots/robot.h>
+#include <webots/gps.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -48,6 +49,17 @@ int main(int argc, char **argv) {
   // internal variables
   int i;
 
+  // initialize GPS
+  WbDeviceTag robot_gps;
+
+  double *gps_data = (double*)malloc(sizeof(double)*3);
+
+  char gps_name[] = { "robot_gps" };
+  
+  robot_gps = wb_robot_get_device( gps_name );
+  
+  wb_gps_enable(robot_gps, TIME_STEP); 
+
   // initialise distance sensors
   WbDeviceTag ds[2];
   char ds_names[2][10] = {"ds_left", "ds_right"};
@@ -56,7 +68,6 @@ int main(int argc, char **argv) {
     wb_distance_sensor_enable(ds[i], TIME_STEP);
   }
 
-  
   // initialise motors
   WbDeviceTag wheels[4];
   
@@ -112,12 +123,16 @@ int main(int argc, char **argv) {
       
       float d2 = wb_distance_sensor_get_value( ds[1] );
         
-      // printf("\n %.1f %.1f", d1, d2 );
+      // GPS values
+      gps_data[0] = wb_gps_get_values(robot_gps)[0];
+      gps_data[1] = wb_gps_get_values(robot_gps)[1];
+      gps_data[2] = wb_gps_get_values(robot_gps)[2];      
             
       // Composing percepts message to send to Javino
       int nbytes_written = sprintf(percepts_msg, 
-        "dLeft(%.1f);dRight(%.1f);",
-        d1, d2 );
+        "dLeft(%.1f);dRight(%.1f);gps( %.1f, %.1f, %.1f );",
+        d1, d2 , 
+        gps_data[0], gps_data[1], gps_data[2]);
         
        if ( nbytes_written < 0 ){
        
