@@ -17,10 +17,19 @@
 # You may add some variable definitions hereafter to customize the build process
 # See documentation in $(WEBOTS_HOME_PATH)/resources/Makefile.include
 
+include config.include
 
 # Do not modify the following: this includes Webots global Makefile.include
 INCLUDE = -IJavinoInC/include
-LIBRARIES = -LJavinoInC/lib/ -ljavino
+# LIBRARIES =
+
+JavinoInC/src/javino.c:
+	git clone https://github.com/chon-group/JavinoInC.git
+
+# C_SOURCES = my_controller.c my_second_file.c my_third_file.c
+C_SOURCES = JavinoInC/src/javino.c four_wheels_collision_avoidance.c
+
+CFLAGS = $(USE_BATTERY) $(USE_GPS)
 
 null :=
 space := $(null) $(null)

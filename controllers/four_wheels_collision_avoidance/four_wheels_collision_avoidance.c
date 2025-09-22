@@ -120,43 +120,64 @@ int main(int argc, char **argv) {
     
     javino_received_msg = javino_get_msg( );
     
+#if NOT_NEEDED_ANYMORE   
     fprintf(stderr, "\njavino_received_msg: %s", 
       javino_received_msg ); 
+#endif      
     
     if ( ! strcmp( javino_received_msg , "getPercepts" )  ){
+
+      // To be used when composing multiple sensors
+      int offset = 0;
       
       // Distance sensor value
       float d1 = wb_distance_sensor_get_value( ds[0] );
       
       float d2 = wb_distance_sensor_get_value( ds[1] );
+                  
+      // Composing percepts message to send to Javino
+      int nbytes_written = sprintf(percepts_msg, 
+        "dLeft(%.1f);dRight(%.1f);",
+        d1, d2 );
         
+       if ( nbytes_written < 0 ){
+       
+         fprintf(stderr, "\nERROR: Couldn't compose distance sensors perceptions!");
+         
+       } else {
+       
+         // fprintf(stderr, "\n%s\n", percepts_msg);
+         offset += nbytes_written;
+         
+       }
+
 #ifdef USE_GPS      
       // GPS values
       gps_data[0] = wb_gps_get_values(robot_gps)[0];
       gps_data[1] = wb_gps_get_values(robot_gps)[1];
       gps_data[2] = wb_gps_get_values(robot_gps)[2];
-#endif                  
-      // Composing percepts message to send to Javino
-      int nbytes_written = sprintf(percepts_msg, 
-        "dLeft(%.1f);dRight(%.1f);gps( %.1f, %.1f, %.1f );",
-        d1, d2 , 
+
+      nbytes_written = sprintf( &percepts_msg [ offset ], 
+        "gps( %.1f, %.1f, %.1f );",
         gps_data[0], gps_data[1], gps_data[2]);
         
        if ( nbytes_written < 0 ){
        
-         fprintf(stderr, "\nERROR: Couldn't compose perception strings!");
+         fprintf(stderr, "\nERROR: Couldn't compose GPS perceptions!");
          
        } else {
        
          // fprintf(stderr, "\n%s\n", percepts_msg);
+         offset += nbytes_written;
          
-       }
+       }      
+#endif       
 
 #ifdef USE_BATTERY
       // Battery level
       double battery = wb_robot_battery_sensor_get_value();
 
-      nbytes_written = sprintf( &percepts_msg[ nbytes_written ], 
+      nbytes_written = sprintf( &percepts_msg[ offset ], 
         "battery(%.1f);",
         battery);
 
@@ -167,9 +188,10 @@ int main(int argc, char **argv) {
        } else {
        
          // fprintf(stderr, "\n%s\n", percepts_msg);
+         offset += nbytes_written;
          
        }        
-#endif       
+#endif
        
       fprintf(stdout,
         "\nReceived: getPercepts (%d) = %s\n",
