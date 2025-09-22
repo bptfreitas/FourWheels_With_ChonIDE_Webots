@@ -40,7 +40,7 @@
 int main(int argc, char **argv) {
 
   static int reasoning_cycle = 1;
-  char percepts_msg[262];  
+  char percepts_msg[262];
 
  
   // initialise the Webots API
@@ -49,6 +49,7 @@ int main(int argc, char **argv) {
   // internal variables
   int i;
 
+#ifdef USE_GPS
   // initialize GPS
   WbDeviceTag robot_gps;
 
@@ -59,6 +60,7 @@ int main(int argc, char **argv) {
   robot_gps = wb_robot_get_device( gps_name );
   
   wb_gps_enable(robot_gps, TIME_STEP); 
+#endif  
 
   // initialise distance sensors
   WbDeviceTag ds[2];
@@ -76,8 +78,13 @@ int main(int argc, char **argv) {
     wheels[i] = wb_robot_get_device(wheels_names[i]);
     wb_motor_set_position(wheels[i], INFINITY);
   }
-  
-  
+
+#ifdef USE_BATTERY  
+  // initialize battery
+  wb_robot_battery_sensor_enable( TIME_STEP );
+#endif
+
+  // Connecting to the exogenous port
   int exogenous_port =  open(
     TTY_EXOGENOUS_PORT,
     O_RDWR
@@ -123,11 +130,12 @@ int main(int argc, char **argv) {
       
       float d2 = wb_distance_sensor_get_value( ds[1] );
         
+#ifdef USE_GPS      
       // GPS values
       gps_data[0] = wb_gps_get_values(robot_gps)[0];
       gps_data[1] = wb_gps_get_values(robot_gps)[1];
-      gps_data[2] = wb_gps_get_values(robot_gps)[2];      
-            
+      gps_data[2] = wb_gps_get_values(robot_gps)[2];
+#endif                  
       // Composing percepts message to send to Javino
       int nbytes_written = sprintf(percepts_msg, 
         "dLeft(%.1f);dRight(%.1f);gps( %.1f, %.1f, %.1f );",
@@ -143,6 +151,25 @@ int main(int argc, char **argv) {
          // fprintf(stderr, "\n%s\n", percepts_msg);
          
        }
+
+#ifdef USE_BATTERY
+      // Battery level
+      double battery = wb_robot_battery_sensor_get_value();
+
+      nbytes_written = sprintf( &percepts_msg[ nbytes_written ], 
+        "battery(%.1f);",
+        battery);
+
+      if ( nbytes_written < 0 ){
+       
+         fprintf(stderr, "\nERROR: Couldn't add battery readings!");
+         
+       } else {
+       
+         // fprintf(stderr, "\n%s\n", percepts_msg);
+         
+       }        
+#endif       
        
       fprintf(stdout,
         "\nReceived: getPercepts (%d) = %s\n",
