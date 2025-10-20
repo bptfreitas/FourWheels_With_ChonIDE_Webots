@@ -230,7 +230,7 @@ Robot {
     density -1
     mass 1
   }
-  controller "four_wheels_collision_avoidance"
+  controller "chonbot"
   linearVelocity -1.2357996662340804e-08 3.2666991917217575e-05 6.716570263854338e-10
   angularVelocity -1.546824500160252e-08 -7.346856544163671e-09 -0.40462983497951677
 }

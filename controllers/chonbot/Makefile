@@ -17,7 +17,11 @@
 # You may add some variable definitions hereafter to customize the build process
 # See documentation in $(WEBOTS_HOME_PATH)/resources/Makefile.include
 
+<<<<<<< HEAD:controllers/four_wheels_collision_avoidance/Makefile
 include config.include
+=======
+-include config.include
+>>>>>>> wesaac2025:controllers/chonbot/Makefile
 
 # Do not modify the following: this includes Webots global Makefile.include
 INCLUDE = -IJavinoInC/include
@@ -27,7 +31,11 @@ JavinoInC/src/javino.c:
 	git clone https://github.com/chon-group/JavinoInC.git
 
 # C_SOURCES = my_controller.c my_second_file.c my_third_file.c
+<<<<<<< HEAD:controllers/four_wheels_collision_avoidance/Makefile
 C_SOURCES = JavinoInC/src/javino.c four_wheels_collision_avoidance.c
+=======
+C_SOURCES = JavinoInC/src/javino.c chonbot.c
+>>>>>>> wesaac2025:controllers/chonbot/Makefile
 
 CFLAGS = $(USE_BATTERY) $(USE_GPS)
 

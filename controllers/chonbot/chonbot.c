@@ -249,7 +249,23 @@ int main(int argc, char **argv) {
       wb_motor_set_velocity(wheels[2], left_speed);
       wb_motor_set_velocity(wheels[3], right_speed); 
       
-      free( javino_received_msg );                
+      free( javino_received_msg );
+      
+    } else if ( ! strcmp( javino_received_msg , "goLeft" ) ){
+    
+      fprintf( stdout,
+        "\nReceived: goLeft (%d)\n",
+        reasoning_cycle++ );
+    
+      left_speed = 0.0;
+      right_speed = 1.0;
+      
+      wb_motor_set_velocity(wheels[0], left_speed);
+      wb_motor_set_velocity(wheels[1], right_speed);
+      wb_motor_set_velocity(wheels[2], left_speed);
+      wb_motor_set_velocity(wheels[3], right_speed); 
+      
+      free( javino_received_msg );      
     
     } else if ( ! strcmp( javino_received_msg , "goBack" ) ){
     
@@ -283,7 +299,7 @@ int main(int argc, char **argv) {
       wb_motor_set_velocity(wheels[2], left_speed);
       wb_motor_set_velocity(wheels[3], right_speed);  
       
-      free( javino_received_msg );                     
+      free( javino_received_msg );
     
     } else {
     
@@ -291,6 +307,8 @@ int main(int argc, char **argv) {
         "\nWARNING: unknown received act (%d): (%s) \n",
         reasoning_cycle++,
         javino_received_msg ); 
+
+      free( javino_received_msg );        
     
     }
     
